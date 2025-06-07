@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
-// POST: Захиалга хадгалах
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const data = {
@@ -22,7 +21,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, insertedId: result.insertedId });
 }
 
-// GET: Бүх захиалгуудыг авах
 export async function GET() {
   const client = await MongoClient.connect(process.env.MONGO!);
   const db = client.db();
