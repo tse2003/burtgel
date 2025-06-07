@@ -28,19 +28,32 @@ export default function OrdersPage() {
   }, []);
 
   const handleCheckboxChange = async (id: string, checked: boolean) => {
-    // UI дээрх төлвийг өөрчилнө
     setOrders((prev) =>
       prev.map((order) =>
         order._id === id ? { ...order, selected: checked } : order
       )
     );
 
-    // Серверт хадгалах хүсэлт явуулна
     await fetch('/api/first', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, selected: checked }),
     });
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmed = confirm('Энэ захиалгыг устгах уу?');
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/first?id=${id}`, {
+      method: 'DELETE',
+    });
+
+    if (res.ok) {
+      setOrders((prev) => prev.filter((order) => order._id !== id));
+    } else {
+      alert('Устгах үйлдэл амжилтгүй боллоо');
+    }
   };
 
   return (
@@ -54,6 +67,7 @@ export default function OrdersPage() {
           <table className="min-w-full table-auto border border-gray-300 bg-white">
             <thead className="bg-gray-100">
               <tr>
+                <th className="px-4 py-2 border">Устгах</th>
                 <th className="px-4 py-2 border">Сонгох</th>
                 <th className="px-4 py-2 border">Хаяг</th>
                 <th className="px-4 py-2 border">Утас</th>
@@ -86,6 +100,14 @@ export default function OrdersPage() {
                   <td className="px-4 py-2 border">{order.une}</td>
                   <td className="px-4 py-2 border text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    <button
+                      onClick={() => handleDelete(order._id)}
+                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Устгах
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -9,7 +9,7 @@ type Order = {
   filter: string;
   une: string;
   createdAt: string;
-  selected?: boolean; // checkbox сонголт
+  selected?: boolean;
 };
 
 const LOCAL_STORAGE_KEY = 'orders_selected';
@@ -18,39 +18,35 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Серверээс захиалгуудыг авах + localStorage-аас selected мэдээллийг авах
   useEffect(() => {
-    const fetchOrders = async () => {
-      const res = await fetch('/api/second');
-      const data: Order[] = await res.json();
-
-      // localStorage-аас selected checkbox-ын мэдээллийг авах
-      const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
-      const selectedMap: Record<string, boolean> = savedSelected
-        ? JSON.parse(savedSelected)
-        : {};
-
-      // server-с ирсэн захиалгуудыг selected утгатай хослуулах
-      const withSelected = data.map((order) => ({
-        ...order,
-        selected: selectedMap[order._id] ?? false,
-      }));
-
-      setOrders(withSelected);
-      setLoading(false);
-    };
-
     fetchOrders();
   }, []);
 
-  // Checkbox-ийн өөрчлөлт гарахад state болон localStorage-д хадгалах
+  const fetchOrders = async () => {
+    setLoading(true);
+    const res = await fetch('/api/second');
+    const data: Order[] = await res.json();
+
+    const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const selectedMap: Record<string, boolean> = savedSelected
+      ? JSON.parse(savedSelected)
+      : {};
+
+    const withSelected = data.map((order) => ({
+      ...order,
+      selected: selectedMap[order._id] ?? false,
+    }));
+
+    setOrders(withSelected);
+    setLoading(false);
+  };
+
   const handleCheckboxChange = (id: string, checked: boolean) => {
     setOrders((prev) => {
       const newOrders = prev.map((order) =>
         order._id === id ? { ...order, selected: checked } : order
       );
 
-      // localStorage-д хадгалах
       const selectedMap: Record<string, boolean> = {};
       newOrders.forEach((order) => {
         if (order.selected) selectedMap[order._id] = true;
@@ -59,6 +55,27 @@ export default function OrdersPage() {
 
       return newOrders;
     });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Энэ захиалгыг устгах уу?')) return;
+
+    const res = await fetch(`/api/second?id=${id}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success) {
+      setOrders((prev) => prev.filter((order) => order._id !== id));
+
+      // Мөн localStorage-аас ч устгах
+      const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedSelected) {
+        const selectedMap = JSON.parse(savedSelected);
+        delete selectedMap[id];
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(selectedMap));
+      }
+    } else {
+      alert('Устгах үед алдаа гарлаа: ' + data.message);
+    }
   };
 
   return (
@@ -72,6 +89,7 @@ export default function OrdersPage() {
           <table className="min-w-full table-auto border border-gray-300 bg-white">
             <thead className="bg-gray-100">
               <tr>
+                <th className="px-4 py-2 border">Устгах</th>
                 <th className="px-4 py-2 border">Сонгох</th>
                 <th className="px-4 py-2 border">Хаяг</th>
                 <th className="px-4 py-2 border">Утас</th>
@@ -102,6 +120,14 @@ export default function OrdersPage() {
                   <td className="px-4 py-2 border">{order.une}</td>
                   <td className="px-4 py-2 border text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    <button
+                      onClick={() => handleDelete(order._id)}
+                      className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Устгах
+                    </button>
                   </td>
                 </tr>
               ))}
