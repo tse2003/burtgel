@@ -10,6 +10,7 @@ type Order = {
   une: string;
   createdAt: string;
   selected?: boolean;
+  comment?: string;
 };
 
 export default function OrdersPage() {
@@ -38,6 +39,20 @@ export default function OrdersPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, selected: checked }),
+    });
+  };
+
+  const handleCommentChange = async (id: string, value: string) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === id ? { ...order, comment: value } : order
+      )
+    );
+
+    await fetch('/api/first', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, comment: value }),
     });
   };
 
@@ -83,6 +98,7 @@ export default function OrdersPage() {
                 <th className="px-4 py-2 border border-gray-300">Шүүлтүүр</th>
                 <th className="px-4 py-2 border border-gray-300">Үнэ</th>
                 <th className="px-4 py-2 border border-gray-300">Огноо</th>
+                <th className="px-4 py-2 border border-gray-300">Сэтгэгдэл</th>
                 <th className="px-4 py-2 border border-gray-300">Устгах</th>
               </tr>
             </thead>
@@ -118,6 +134,17 @@ export default function OrdersPage() {
                   <td className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600" data-label="Огноо">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>
+
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Сэтгэгдэл">
+                    <input
+                      type="text"
+                      value={order.comment || ''}
+                      onChange={(e) => handleCommentChange(order._id, e.target.value)}
+                      className="w-full border rounded px-2 py-1"
+                      placeholder="Сэтгэгдэл бичих"
+                    />
+                  </td>
+
                   <td className="px-4 py-2 border border-gray-300 md:table-cell text-center" data-label="Устгах">
                     <button
                       onClick={() => handleDelete(order._id)}

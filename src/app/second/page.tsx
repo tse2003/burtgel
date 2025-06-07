@@ -10,6 +10,7 @@ type Order = {
   une: string;
   createdAt: string;
   selected?: boolean;
+  comment?: string;
 };
 
 const LOCAL_STORAGE_KEY = 'orders_selected';
@@ -27,21 +28,24 @@ export default function OrdersPage() {
     const res = await fetch('/api/second');
     const data: Order[] = await res.json();
 
+    // Локал хадгалалтнаас selected статус авах
     const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
     const selectedMap: Record<string, boolean> = savedSelected
       ? JSON.parse(savedSelected)
       : {};
 
+    // Өгөгдөл дээр selected-ийг тохируулах
     const withSelected = data.map((order) => ({
       ...order,
-      selected: selectedMap[order._id] ?? false,
+      selected: selectedMap[order._id] ?? order.selected ?? false,
+      comment: order.comment || '',
     }));
 
     setOrders(withSelected);
     setLoading(false);
   };
 
-  const handleCheckboxChange = (id: string, checked: boolean) => {
+  const handleCheckboxChange = async (id: string, checked: boolean) => {
     setOrders((prev) => {
       const newOrders = prev.map((order) =>
         order._id === id ? { ...order, selected: checked } : order
@@ -55,6 +59,34 @@ export default function OrdersPage() {
 
       return newOrders;
     });
+
+    // Сервер рүү PATCH хүсэлт явуулах
+    try {
+      await fetch('/api/second', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, selected: checked }),
+      });
+    } catch (error) {
+      console.error('Checkbox update error:', error);
+    }
+  };
+
+  const handleCommentChange = async (id: string, comment: string) => {
+    setOrders((prev) =>
+      prev.map((order) => (order._id === id ? { ...order, comment } : order))
+    );
+
+    // Сервер рүү comment хадгалах PATCH хүсэлт
+    try {
+      await fetch('/api/second', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, comment }),
+      });
+    } catch (error) {
+      console.error('Comment update error:', error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -102,6 +134,7 @@ export default function OrdersPage() {
                 <th className="px-4 py-2 border border-gray-300">Шүүлтүүр</th>
                 <th className="px-4 py-2 border border-gray-300">Үнэ</th>
                 <th className="px-4 py-2 border border-gray-300">Огноо</th>
+                <th className="px-4 py-2 border border-gray-300">Сэтгэгдэл</th>
                 <th className="px-4 py-2 border border-gray-300">Устгах</th>
               </tr>
             </thead>
@@ -125,22 +158,54 @@ export default function OrdersPage() {
                     />
                   </td>
 
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Хаяг">
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell"
+                    data-label="Хаяг"
+                  >
                     {order.khayg}
                   </td>
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Утас">
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell"
+                    data-label="Утас"
+                  >
                     {order.utas}
                   </td>
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Шүүлтүүр">
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell"
+                    data-label="Шүүлтүүр"
+                  >
                     {order.filter}
                   </td>
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Үнэ">
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell"
+                    data-label="Үнэ"
+                  >
                     {order.une}
                   </td>
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600" data-label="Огноо">
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600"
+                    data-label="Огноо"
+                  >
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell text-center" data-label="Устгах">
+
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Сэтгэгдэл">
+                    <input
+                      type="text"
+                      value={order.comment || ''}
+                      onChange={(e) =>
+                        handleCommentChange(order._id, e.target.value)
+                      }
+                      placeholder="Сэтгэгдэл бичих..."
+                      className="w-full border border-gray-300 rounded px-2 py-1"
+                      aria-label={`Сэтгэгдэл ${order.khayg}`}
+                    />
+                  </td>
+
+                  <td
+                    className="px-4 py-2 border border-gray-300 md:table-cell text-center"
+                    data-label="Устгах"
+                  >
                     <button
                       onClick={() => handleDelete(order._id)}
                       className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -191,4 +256,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-

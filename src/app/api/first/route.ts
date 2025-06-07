@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     filter: formData.get("filter"),
     une: formData.get("une"),
     selected: formData.get("selected") === "true", // checkbox
+    comment: formData.get("comment") || "",        // Шинээр нэмсэн comment талбар
     createdAt: new Date(),
   };
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, insertedId: result.insertedId });
 }
 
-// GET - Бүх захиалгууд
+// GET - Бүх захиалгуудыг авах
 export async function GET() {
   await client.connect();
   const list = await collection.find().sort({ createdAt: -1 }).toArray();
@@ -32,20 +33,30 @@ export async function GET() {
     ...item,
     _id: item._id.toString(),
     selected: item.selected || false,
+    comment: item.comment || "",
   }));
 
   return NextResponse.json(cleaned);
 }
 
-// PATCH - Checkbox утга хадгалах
+// PATCH - Checkbox болон сэтгэгдэл хадгалах
 export async function PATCH(req: NextRequest) {
   const body = await req.json();
-  const { id, selected } = body;
+  const { id, selected, comment } = body;
 
   await client.connect();
+
+  const updateFields: any = {};
+  if (typeof selected === 'boolean') updateFields.selected = selected;
+  if (typeof comment === 'string') updateFields.comment = comment;
+
+  if (Object.keys(updateFields).length === 0) {
+    return NextResponse.json({ error: 'Шинэчилэх утга байхгүй' }, { status: 400 });
+  }
+
   await collection.updateOne(
     { _id: new ObjectId(id) },
-    { $set: { selected: selected } }
+    { $set: updateFields }
   );
 
   return NextResponse.json({ success: true });
