@@ -61,15 +61,15 @@ export default function OrderPage() {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded shadow-md w-full max-w-md mx-auto"
       >
-        <h2 className="text-xl font-bold mb-4">Шинэ захиалга нэмэх</h2>
+        <h2 className="text-xl font-bold mb-4">НЭМЭХ</h2>
 
         <select
           className="w-full border px-3 py-2 mb-2"
           value={targetCollection}
           onChange={(e) => setTargetCollection(e.target.value as 'first' | 'second')}
         >
-          <option value="first">АЖИЛТАН - 1</option>
-          <option value="second">АЖИЛТАН - 2</option>
+          <option value="first">УУГАНБАЯР</option>
+          <option value="second">ТӨМӨР-ОЧИР</option>
         </select>
 
         <input

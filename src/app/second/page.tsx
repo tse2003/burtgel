@@ -58,6 +58,12 @@ export default function OrdersPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const pin = prompt('PIN кодоо оруулна уу:');
+    if (pin !== '0516') {
+      alert('Буруу PIN код!');
+      return;
+    }
+
     if (!confirm('Энэ захиалгыг устгах уу?')) return;
 
     const res = await fetch(`/api/second?id=${id}`, { method: 'DELETE' });
@@ -66,7 +72,6 @@ export default function OrdersPage() {
     if (data.success) {
       setOrders((prev) => prev.filter((order) => order._id !== id));
 
-      // Мөн localStorage-аас ч устгах
       const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (savedSelected) {
         const selectedMap = JSON.parse(savedSelected);
@@ -80,7 +85,7 @@ export default function OrdersPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-screen-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Second Collection Захиалгууд</h1>
+      <h1 className="text-2xl font-bold mb-6">ТӨМӨР-ОЧИРЫН АЖИЛ</h1>
 
       {loading ? (
         <p>Уншиж байна...</p>
@@ -120,40 +125,22 @@ export default function OrdersPage() {
                     />
                   </td>
 
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Хаяг"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Хаяг">
                     {order.khayg}
                   </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Утас"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Утас">
                     {order.utas}
                   </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Шүүлтүүр"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Шүүлтүүр">
                     {order.filter}
                   </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Үнэ"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Үнэ">
                     {order.une}
                   </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600"
-                    data-label="Огноо"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600" data-label="Огноо">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell text-center"
-                    data-label="Устгах"
-                  >
+                  <td className="px-4 py-2 border border-gray-300 md:table-cell text-center" data-label="Устгах">
                     <button
                       onClick={() => handleDelete(order._id)}
                       className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -162,13 +149,13 @@ export default function OrdersPage() {
                     </button>
                   </td>
 
-                  {/* Mobile styling: display each row as block with labels */}
+                  {/* Mobile styling */}
                   <style jsx>{`
                     @media (max-width: 767px) {
                       tr {
                         display: block;
                         margin-bottom: 1rem;
-                        border: 2px solid #d1d5db; /* gray-300 */
+                        border: 2px solid #d1d5db;
                         border-radius: 0.375rem;
                         background: ${order.selected ? '#dcfce7' : 'transparent'};
                       }
@@ -177,7 +164,7 @@ export default function OrdersPage() {
                         justify-content: space-between;
                         padding: 0.5rem 1rem;
                         border: none !important;
-                        border-bottom: 1px solid #e5e7eb; /* gray-200 */
+                        border-bottom: 1px solid #e5e7eb;
                       }
                       td:last-child {
                         border-bottom: none !important;
@@ -185,7 +172,7 @@ export default function OrdersPage() {
                       td[data-label]:before {
                         content: attr(data-label) ": ";
                         font-weight: 600;
-                        color: #374151; /* gray-700 */
+                        color: #374151;
                       }
                       td:first-child {
                         justify-content: flex-start;
@@ -204,3 +191,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+

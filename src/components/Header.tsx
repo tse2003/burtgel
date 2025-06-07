@@ -1,11 +1,23 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const handleCloseMenu = () => setIsMobileMenuOpen(false);
+
+  const handlePINAccess = (role: 'first' | 'second') => {
+    const correctPIN = role === 'first' ? '1111' : '2222'; // Set your actual PINs here
+    const input = prompt(`${role === 'first' ? 'УУГАНБАЯР' : 'ТӨМӨР-ОЧИР'} НУУЦ ҮГЭЭ оруулна уу:`);
+    if (input === correctPIN) {
+      router.push(`/${role}`);
+    } else if (input !== null) {
+      alert('Буруу PIN. Дахин оролдоно уу.');
+    }
+  };
 
   return (
     <header className="navbar bg-base-100 shadow-sm px-6 py-2 relative z-50">
@@ -29,8 +41,8 @@ export default function Header() {
       {/* Desktop menu */}
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 font-semibold text-lg">
-          <li><a href="/first">1-Р АЖИЛТАН</a></li>
-          <li><a href="/second">2-Р АЖИЛТАН</a></li>
+          <li><button onClick={() => handlePINAccess('first')}>УУГАНБАЯР</button></li>
+          <li><button onClick={() => handlePINAccess('second')}>ТӨМӨР-ОЧИР</button></li>
         </ul>
       </div>
 
@@ -43,8 +55,8 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="absolute top-full left-0 w-full bg-base-100 shadow-md p-4 transition-all duration-300 lg:hidden">
           <ul className="flex flex-col gap-3 text-lg font-semibold">
-            <li><a href="/first" onClick={handleCloseMenu}>1-Р АЖИЛТАН</a></li>
-            <li><a href="/second" onClick={handleCloseMenu}>2-Р АЖИЛТАН</a></li>
+            <li><button onClick={() => { handlePINAccess('first'); handleCloseMenu(); }}>УУГАНБАЯР</button></li>
+            <li><button onClick={() => { handlePINAccess('second'); handleCloseMenu(); }}>ТӨМӨР-ОЧИР</button></li>
             <li><a href="/admin" onClick={handleCloseMenu}>АДМИН</a></li>
           </ul>
         </div>

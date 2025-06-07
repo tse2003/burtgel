@@ -42,6 +42,14 @@ export default function OrdersPage() {
   };
 
   const handleDelete = async (id: string) => {
+    const enteredPin = prompt('PIN кодыг оруулна уу:');
+    const correctPin = '0516'; // <-- Change to your secure PIN
+
+    if (enteredPin !== correctPin) {
+      alert('PIN буруу байна!');
+      return;
+    }
+
     const confirmed = confirm('Энэ захиалгыг устгах уу?');
     if (!confirmed) return;
 
@@ -58,7 +66,7 @@ export default function OrdersPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-screen-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">First Collection Захиалгууд</h1>
+      <h1 className="text-2xl font-bold mb-6">УУГАНБАЯРЫН АЖИЛ</h1>
 
       {loading ? (
         <p>Уншиж байна...</p>
@@ -82,9 +90,7 @@ export default function OrdersPage() {
               {orders.map((order) => (
                 <tr
                   key={order._id}
-                  className={`md:text-center ${
-                    order.selected ? 'bg-green-100' : ''
-                  }`}
+                  className={`md:text-center ${order.selected ? 'bg-green-100' : ''}`}
                 >
                   <td className="px-4 py-2 border border-gray-300 md:table-cell flex justify-center items-center">
                     <input
@@ -97,7 +103,6 @@ export default function OrdersPage() {
                       aria-label={`Сонгох ${order.khayg}`}
                     />
                   </td>
-
                   <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Хаяг">
                     {order.khayg}
                   </td>
@@ -122,13 +127,13 @@ export default function OrdersPage() {
                     </button>
                   </td>
 
-                  {/* Mobile styling: display each row as block with labels */}
+                  {/* Mobile styling */}
                   <style jsx>{`
                     @media (max-width: 767px) {
                       tr {
                         display: block;
                         margin-bottom: 1rem;
-                        border: 2px solid #d1d5db; /* gray-300 */
+                        border: 2px solid #d1d5db;
                         border-radius: 0.375rem;
                         background: ${order.selected ? '#dcfce7' : 'transparent'};
                       }
@@ -137,7 +142,7 @@ export default function OrdersPage() {
                         justify-content: space-between;
                         padding: 0.5rem 1rem;
                         border: none !important;
-                        border-bottom: 1px solid #e5e7eb; /* gray-200 */
+                        border-bottom: 1px solid #e5e7eb;
                       }
                       td:last-child {
                         border-bottom: none !important;
@@ -145,7 +150,7 @@ export default function OrdersPage() {
                       td[data-label]:before {
                         content: attr(data-label) ": ";
                         font-weight: 600;
-                        color: #374151; /* gray-700 */
+                        color: #374151;
                       }
                       td:first-child {
                         justify-content: flex-start;
