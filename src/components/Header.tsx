@@ -5,17 +5,28 @@ import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'first' | 'second' | null>(null);
+  const [pinInput, setPinInput] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleCloseMenu = () => setIsMobileMenuOpen(false);
 
-  const handlePINAccess = (role: 'first' | 'second') => {
-    const correctPIN = role === 'first' ? '1111' : '2222';
-    const input = prompt(`${role === 'first' ? 'УУГАНБАЯР' : 'ТӨМӨР-ОЧИР'} НУУЦ ҮГЭЭ оруулна уу:`);
-    if (input === correctPIN) {
-      router.push(`/${role}`);
-    } else if (input !== null) {
-      alert('Буруу PIN. Дахин оролдоно уу.');
+  const openPINModal = (role: 'first' | 'second') => {
+    setSelectedRole(role);
+    setPinInput('');
+    setError('');
+    setPinModalOpen(true);
+  };
+
+  const handleSubmitPIN = () => {
+    const correctPIN = selectedRole === 'first' ? '1111' : '2222';
+    if (pinInput === correctPIN) {
+      setPinModalOpen(false);
+      router.push(`/${selectedRole}`);
+    } else {
+      setError('Буруу PIN. Дахин оролдоно уу.');
     }
   };
 
@@ -35,8 +46,8 @@ export default function Header() {
 
         {/* Desktop Menu */}
         <nav className="hidden lg:flex items-center gap-6 font-semibold text-lg">
-          <button onClick={() => handlePINAccess('first')}>УУГАНБАЯР</button>
-          <button onClick={() => handlePINAccess('second')}>ТӨМӨР-ОЧИР</button>
+          <button onClick={() => openPINModal('first')}>УУГАНБАЯР</button>
+          <button onClick={() => openPINModal('second')}>ТӨМӨР-ОЧИР</button>
           <a href="/admin" className="btn btn-primary text-white">АДМИН</a>
         </nav>
 
@@ -58,12 +69,12 @@ export default function Header() {
       >
         <ul className="flex flex-col gap-4 font-semibold text-lg bg-base-100 py-4 px-2 rounded shadow-md">
           <li>
-            <button onClick={() => { handlePINAccess('first'); handleCloseMenu(); }}>
+            <button onClick={() => { openPINModal('first'); handleCloseMenu(); }}>
               УУГАНБАЯР
             </button>
           </li>
           <li>
-            <button onClick={() => { handlePINAccess('second'); handleCloseMenu(); }}>
+            <button onClick={() => { openPINModal('second'); handleCloseMenu(); }}>
               ТӨМӨР-ОЧИР
             </button>
           </li>
@@ -74,6 +85,33 @@ export default function Header() {
           </li>
         </ul>
       </div>
+
+      {/* PIN Modal */}
+      {pinModalOpen && (
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+            <h2 className="text-lg font-bold mb-4">
+              {selectedRole === 'first' ? 'УУГАНБАЯР' : 'ТӨМӨР-ОЧИР'} - Нууц үг оруулна уу
+            </h2>
+            <input
+              type="password"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              className="input input-bordered w-full mb-2"
+              placeholder="****"
+            />
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            <div className="flex justify-end gap-2 mt-4">
+              <button className="btn btn-outline" onClick={() => setPinModalOpen(false)}>
+                Болих
+              </button>
+              <button className="btn btn-primary text-white" onClick={handleSubmitPIN}>
+                Нэвтрэх
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
