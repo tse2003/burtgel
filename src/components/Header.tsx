@@ -10,7 +10,7 @@ export default function Header() {
   const handleCloseMenu = () => setIsMobileMenuOpen(false);
 
   const handlePINAccess = (role: 'first' | 'second') => {
-    const correctPIN = role === 'first' ? '1111' : '2222'; // Set your actual PINs here
+    const correctPIN = role === 'first' ? '1111' : '2222';
     const input = prompt(`${role === 'first' ? 'УУГАНБАЯР' : 'ТӨМӨР-ОЧИР'} НУУЦ ҮГЭЭ оруулна уу:`);
     if (input === correctPIN) {
       router.push(`/${role}`);
@@ -20,47 +20,60 @@ export default function Header() {
   };
 
   return (
-    <header className="navbar bg-base-100 shadow-sm px-6 py-2 relative z-50">
-      {/* Logo and mobile toggle */}
-      <div className="navbar-start flex items-center">
-        <Image
-          src="/logo.png"
-          alt="Logo"
-          width={120}
-          height={120}
-          className="mr-2 w-auto h-auto max-w-[120px]"
-        />
+    <header className="bg-base-100 shadow-sm px-6 py-3 z-50 relative">
+      <div className="flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={120}
+            height={40}
+            className="w-auto h-auto max-w-[120px]"
+          />
+        </div>
+
+        {/* Desktop Menu */}
+        <nav className="hidden lg:flex items-center gap-6 font-semibold text-lg">
+          <button onClick={() => handlePINAccess('first')}>УУГАНБАЯР</button>
+          <button onClick={() => handlePINAccess('second')}>ТӨМӨР-ОЧИР</button>
+          <a href="/admin" className="btn btn-primary text-white">АДМИН</a>
+        </nav>
+
+        {/* Mobile menu toggle */}
         <button
-          className="lg:hidden ml-4 text-2xl"
+          className="lg:hidden text-3xl focus:outline-none"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle menu"
         >
           ☰
         </button>
       </div>
 
-      {/* Desktop menu */}
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1 font-semibold text-lg">
-          <li><button onClick={() => handlePINAccess('first')}>УУГАНБАЯР</button></li>
-          <li><button onClick={() => handlePINAccess('second')}>ТӨМӨР-ОЧИР</button></li>
+      {/* Mobile Menu */}
+      <div
+        className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+          isMobileMenuOpen ? 'max-h-60 mt-3' : 'max-h-0'
+        }`}
+      >
+        <ul className="flex flex-col gap-4 font-semibold text-lg bg-base-100 py-4 px-2 rounded shadow-md">
+          <li>
+            <button onClick={() => { handlePINAccess('first'); handleCloseMenu(); }}>
+              УУГАНБАЯР
+            </button>
+          </li>
+          <li>
+            <button onClick={() => { handlePINAccess('second'); handleCloseMenu(); }}>
+              ТӨМӨР-ОЧИР
+            </button>
+          </li>
+          <li>
+            <a href="/admin" onClick={handleCloseMenu} className="text-blue-600">
+              АДМИН
+            </a>
+          </li>
         </ul>
       </div>
-
-      {/* Admin button */}
-      <div className="navbar-end">
-        <a href="/admin" className="btn btn-primary text-white">АДМИН</a>
-      </div>
-
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-base-100 shadow-md p-4 transition-all duration-300 lg:hidden">
-          <ul className="flex flex-col gap-3 text-lg font-semibold">
-            <li><button onClick={() => { handlePINAccess('first'); handleCloseMenu(); }}>УУГАНБАЯР</button></li>
-            <li><button onClick={() => { handlePINAccess('second'); handleCloseMenu(); }}>ТӨМӨР-ОЧИР</button></li>
-            <li><a href="/admin" onClick={handleCloseMenu}>АДМИН</a></li>
-          </ul>
-        </div>
-      )}
     </header>
   );
 }
