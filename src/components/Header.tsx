@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation';
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'first' | 'second' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'first' | 'second' | 'admin' | null>(null);
   const [pinInput, setPinInput] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleCloseMenu = () => setIsMobileMenuOpen(false);
 
-  const openPINModal = (role: 'first' | 'second') => {
+  const openPINModal = (role: 'first' | 'second' | 'admin') => {
     setSelectedRole(role);
     setPinInput('');
     setError('');
@@ -21,10 +21,14 @@ export default function Header() {
   };
 
   const handleSubmitPIN = () => {
-    const correctPIN = selectedRole === 'first' ? '1111' : '2222';
+    let correctPIN = '';
+    if (selectedRole === 'first') correctPIN = '1111';
+    else if (selectedRole === 'second') correctPIN = '2222';
+    else if (selectedRole === 'admin') correctPIN = '0516';
+
     if (pinInput === correctPIN) {
       setPinModalOpen(false);
-      router.push(`/${selectedRole}`);
+      router.push(`/${selectedRole === 'admin' ? 'admin' : selectedRole}`);
     } else {
       setError('Буруу PIN. Дахин оролдоно уу.');
     }
@@ -48,7 +52,9 @@ export default function Header() {
         <nav className="hidden lg:flex items-center gap-6 font-semibold text-lg">
           <button onClick={() => openPINModal('first')}>УУГАНБАЯР</button>
           <button onClick={() => openPINModal('second')}>ТӨМӨР-ОЧИР</button>
-          <a href="/admin" className="btn btn-primary text-white">АДМИН</a>
+          <button onClick={() => openPINModal('admin')} className="btn btn-primary text-white">
+            АДМИН
+          </button>
         </nav>
 
         {/* Mobile menu toggle */}
@@ -79,9 +85,9 @@ export default function Header() {
             </button>
           </li>
           <li>
-            <a href="/admin" onClick={handleCloseMenu} className="text-blue-600">
+            <button onClick={() => { openPINModal('admin'); handleCloseMenu(); }} className="text-blue-600">
               АДМИН
-            </a>
+            </button>
           </li>
         </ul>
       </div>
@@ -91,7 +97,11 @@ export default function Header() {
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
             <h2 className="text-lg font-bold mb-4">
-              {selectedRole === 'first' ? 'УУГАНБАЯР' : 'ТӨМӨР-ОЧИР'} - Нууц үг оруулна уу
+              {selectedRole === 'first'
+                ? 'УУГАНБАЯР'
+                : selectedRole === 'second'
+                ? 'ТӨМӨР-ОЧИР'
+                : 'АДМИН'} - Нууц үг оруулна уу
             </h2>
             <input
               type="password"
