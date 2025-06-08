@@ -18,6 +18,9 @@ const LOCAL_STORAGE_KEY = 'orders_selected';
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [targetOrderId, setTargetOrderId] = useState<string | null>(null);
+  const [pinInput, setPinInput] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -28,13 +31,9 @@ export default function OrdersPage() {
     const res = await fetch('/api/second');
     const data: Order[] = await res.json();
 
-    // Локал хадгалалтнаас selected статус авах
     const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const selectedMap: Record<string, boolean> = savedSelected
-      ? JSON.parse(savedSelected)
-      : {};
+    const selectedMap: Record<string, boolean> = savedSelected ? JSON.parse(savedSelected) : {};
 
-    // Өгөгдөл дээр selected-ийг тохируулах
     const withSelected = data.map((order) => ({
       ...order,
       selected: selectedMap[order._id] ?? order.selected ?? false,
@@ -60,7 +59,6 @@ export default function OrdersPage() {
       return newOrders;
     });
 
-    // Сервер рүү PATCH хүсэлт явуулах
     try {
       await fetch('/api/second', {
         method: 'PATCH',
@@ -77,7 +75,6 @@ export default function OrdersPage() {
       prev.map((order) => (order._id === id ? { ...order, comment } : order))
     );
 
-    // Сервер рүү comment хадгалах PATCH хүсэлт
     try {
       await fetch('/api/second', {
         method: 'PATCH',
@@ -89,29 +86,38 @@ export default function OrdersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const pin = prompt('PIN кодоо оруулна уу:');
-    if (pin !== '0516') {
+  const handleDeleteConfirm = (id: string) => {
+    setTargetOrderId(id);
+    setPinInput('');
+    setShowDialog(true);
+  };
+
+  const deleteOrder = async () => {
+    if (pinInput !== '0516') {
       alert('Буруу PIN код!');
       return;
     }
 
-    if (!confirm('Энэ захиалгыг устгах уу?')) return;
+    if (!targetOrderId) return;
 
-    const res = await fetch(`/api/second?id=${id}`, { method: 'DELETE' });
-    const data = await res.json();
+    try {
+      const res = await fetch(`/api/second?id=${targetOrderId}`, { method: 'DELETE' });
+      const data = await res.json();
 
-    if (data.success) {
-      setOrders((prev) => prev.filter((order) => order._id !== id));
-
-      const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (savedSelected) {
-        const selectedMap = JSON.parse(savedSelected);
-        delete selectedMap[id];
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(selectedMap));
+      if (data.success) {
+        setOrders((prev) => prev.filter((order) => order._id !== targetOrderId));
+        const savedSelected = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedSelected) {
+          const selectedMap = JSON.parse(savedSelected);
+          delete selectedMap[targetOrderId];
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(selectedMap));
+        }
+        setShowDialog(false);
+      } else {
+        alert('Устгах үед алдаа гарлаа: ' + data.message);
       }
-    } else {
-      alert('Устгах үед алдаа гарлаа: ' + data.message);
+    } catch (error) {
+      alert('Алдаа гарлаа: ' + error);
     }
   };
 
@@ -128,25 +134,23 @@ export default function OrdersPage() {
           <table className="min-w-full table-auto border-collapse border border-gray-300 bg-white">
             <thead className="bg-gray-100 hidden md:table-header-group">
               <tr>
-                <th className="px-4 py-2 border border-gray-300">Сонгох</th>
-                <th className="px-4 py-2 border border-gray-300">Хаяг</th>
-                <th className="px-4 py-2 border border-gray-300">Утас</th>
-                <th className="px-4 py-2 border border-gray-300">Шүүлтүүр</th>
-                <th className="px-4 py-2 border border-gray-300">Үнэ</th>
-                <th className="px-4 py-2 border border-gray-300">Огноо</th>
-                <th className="px-4 py-2 border border-gray-300">Сэтгэгдэл</th>
-                <th className="px-4 py-2 border border-gray-300">Устгах</th>
+                <th className="px-4 py-2 border">Сонгох</th>
+                <th className="px-4 py-2 border">Хаяг</th>
+                <th className="px-4 py-2 border">Утас</th>
+                <th className="px-4 py-2 border">Шүүлтүүр</th>
+                <th className="px-4 py-2 border">Үнэ</th>
+                <th className="px-4 py-2 border">Огноо</th>
+                <th className="px-4 py-2 border">Сэтгэгдэл</th>
+                <th className="px-4 py-2 border">Устгах</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr
                   key={order._id}
-                  className={`md:text-center ${
-                    order.selected ? 'bg-green-100' : ''
-                  }`}
+                  className={`md:text-center ${order.selected ? 'bg-green-100' : ''}`}
                 >
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell flex justify-center items-center">
+                  <td className="px-4 py-2 border md:table-cell flex justify-center items-center">
                     <input
                       type="checkbox"
                       checked={order.selected || false}
@@ -154,42 +158,16 @@ export default function OrdersPage() {
                         handleCheckboxChange(order._id, e.target.checked)
                       }
                       className="w-5 h-5 text-green-500 accent-green-500"
-                      aria-label={`Сонгох ${order.khayg}`}
                     />
                   </td>
-
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Хаяг"
-                  >
-                    {order.khayg}
-                  </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Утас"
-                  >
-                    {order.utas}
-                  </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Шүүлтүүр"
-                  >
-                    {order.filter}
-                  </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell"
-                    data-label="Үнэ"
-                  >
-                    {order.une}
-                  </td>
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell text-sm text-gray-600"
-                    data-label="Огноо"
-                  >
+                  <td className="px-4 py-2 border">{order.khayg}</td>
+                  <td className="px-4 py-2 border">{order.utas}</td>
+                  <td className="px-4 py-2 border">{order.filter}</td>
+                  <td className="px-4 py-2 border">{order.une}</td>
+                  <td className="px-4 py-2 border text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>
-
-                  <td className="px-4 py-2 border border-gray-300 md:table-cell" data-label="Сэтгэгдэл">
+                  <td className="px-4 py-2 border">
                     <input
                       type="text"
                       value={order.comment || ''}
@@ -198,23 +176,18 @@ export default function OrdersPage() {
                       }
                       placeholder="Сэтгэгдэл бичих..."
                       className="w-full border border-gray-300 rounded px-2 py-1"
-                      aria-label={`Сэтгэгдэл ${order.khayg}`}
                     />
                   </td>
-
-                  <td
-                    className="px-4 py-2 border border-gray-300 md:table-cell text-center"
-                    data-label="Устгах"
-                  >
+                  <td className="px-4 py-2 border text-center">
                     <button
-                      onClick={() => handleDelete(order._id)}
+                      onClick={() => handleDeleteConfirm(order._id)}
                       className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                       Устгах
                     </button>
                   </td>
 
-                  {/* Mobile styling */}
+                  {/* Mobile responsive styles */}
                   <style jsx>{`
                     @media (max-width: 767px) {
                       tr {
@@ -222,7 +195,7 @@ export default function OrdersPage() {
                         margin-bottom: 1rem;
                         border: 2px solid #d1d5db;
                         border-radius: 0.375rem;
-                        background: ${order.selected ? '#dcfce7' : 'transparent'};
+                        background: ${order.selected ? '#dcfce7' : 'white'};
                       }
                       td {
                         display: flex;
@@ -239,18 +212,42 @@ export default function OrdersPage() {
                         font-weight: 600;
                         color: #374151;
                       }
-                      td:first-child {
-                        justify-content: flex-start;
-                      }
-                      td:last-child {
-                        justify-content: center;
-                      }
                     }
                   `}</style>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Dialog */}
+      {showDialog && (
+        <div className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl">
+            <h2 className="text-lg font-bold mb-2">PIN баталгаажуулалт</h2>
+            <input
+              type="password"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              placeholder="PIN код оруулна уу"
+              className="w-full px-3 py-2 border border-gray-300 rounded mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDialog(false)}
+                className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Болих
+              </button>
+              <button
+                onClick={deleteOrder}
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Устгах
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
