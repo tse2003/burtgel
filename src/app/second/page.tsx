@@ -8,6 +8,7 @@ type Order = {
   utas: string;
   filter: string;
   une: string;
+  time: string;
   createdAt: string;
   selected?: boolean;
   comment?: string;
@@ -139,6 +140,7 @@ export default function OrdersPage() {
                 <th className="px-4 py-2 border">Утас</th>
                 <th className="px-4 py-2 border">Шүүлтүүр</th>
                 <th className="px-4 py-2 border">Үнэ</th>
+                <th className='px-4 py-2 border'>Очих цаг</th>
                 <th className="px-4 py-2 border">Огноо</th>
                 <th className="px-4 py-2 border">Сэтгэгдэл</th>
                 <th className="px-4 py-2 border">Устгах</th>
@@ -164,6 +166,7 @@ export default function OrdersPage() {
                   <td className="px-4 py-2 border">{order.utas}</td>
                   <td className="px-4 py-2 border">{order.filter}</td>
                   <td className="px-4 py-2 border">{order.une}</td>
+                  <td className="px-4 py-2 border">{order.time}</td>
                   <td className="px-4 py-2 border text-sm text-gray-600">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>

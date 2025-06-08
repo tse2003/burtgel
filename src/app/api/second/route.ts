@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     utas: formData.get('utas'),
     filter: formData.get('filter'),
     une: formData.get('une'),
+    time: formData.get('time'),
     createdAt: new Date(),
   };
 

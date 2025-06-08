@@ -8,6 +8,7 @@ type Order = {
   utas: string;
   filter: string;
   une: string;
+  time: string;
   createdAt: string;
 };
 
@@ -19,6 +20,7 @@ export default function OrderPage() {
     utas: '',
     filter: '',
     une: '',
+    time: '',
   });
   const [targetCollection, setTargetCollection] = useState<'first' | 'second'>('second');
 
@@ -40,6 +42,7 @@ export default function OrderPage() {
     form.append('utas', formData.utas);
     form.append('filter', formData.filter);
     form.append('une', formData.une);
+    form.append('time', formData.time);
 
     const res = await fetch(`/api/${targetCollection}`, {
       method: 'POST',
@@ -47,7 +50,7 @@ export default function OrderPage() {
     });
 
     if (res.ok) {
-      setFormData({ khayg: '', utas: '', filter: '', une: '' });
+      setFormData({ khayg: '', utas: '', filter: '', une: '', time: '' });
       fetchData(); // refresh list
     } else {
       alert('Алдаа гарлаа.');
@@ -98,6 +101,13 @@ export default function OrderPage() {
           placeholder="Үнэ"
           value={formData.une}
           onChange={(e) => setFormData({ ...formData, une: e.target.value })}
+          required
+        />
+        <input 
+          className="w-full border px-3 py-2 mb-4"
+          placeholder="Хүргэлт очвол болох цаг"
+          value={formData.time}
+          onChange={(e) => setFormData({ ...formData, time: e.target.value })}
           required
         />
 

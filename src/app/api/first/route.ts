@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     utas: formData.get("utas"),
     filter: formData.get("filter"),
     une: formData.get("une"),
+    time: formData.get('time'),
     selected: formData.get("selected") === "true", // checkbox
     comment: formData.get("comment") || "",        // Шинээр нэмсэн comment талбар
     createdAt: new Date(),

@@ -8,6 +8,7 @@ type Order = {
   utas: string;
   filter: string;
   une: string;
+  time: string;
   createdAt: string;
   selected?: boolean;
   comment?: string;
@@ -97,7 +98,7 @@ export default function OrdersPage() {
           <table className="min-w-full table-auto border-collapse border border-gray-300 bg-white">
             <thead className="bg-gray-100 hidden md:table-header-group">
               <tr>
-                {['Сонгох','Хаяг','Утас','Шүүлтүүр','Үнэ','Огноо','Сэтгэгдэл','Устгах'].map(h => (
+                {['Сонгох','Хаяг','Утас','Шүүлтүүр','Үнэ','Очих цаг','Огноо','Сэтгэгдэл','Устгах'].map(h => (
                   <th key={h} className="px-4 py-2 border">{h}</th>
                 ))}
               </tr>
@@ -117,6 +118,7 @@ export default function OrdersPage() {
                   <td className="px-4 py-2 border" data-label="Утас">{order.utas}</td>
                   <td className="px-4 py-2 border" data-label="Шүүлтүүр">{order.filter}</td>
                   <td className="px-4 py-2 border" data-label="Үнэ">{order.une}</td>
+                  <td className="px-4 py-2 border" date-label="Очих цаг">{order.time}</td>
                   <td className="px-4 py-2 border text-sm text-gray-600" data-label="Огноо">
                     {new Date(order.createdAt).toLocaleString('mn-MN')}
                   </td>
